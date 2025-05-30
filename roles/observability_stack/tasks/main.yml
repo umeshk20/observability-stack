@@ -1,0 +1,10 @@
+- block:
+  - import_tasks: install.yaml
+    tags: install
+
+  - import_tasks: uninstall.yaml
+    tags: uninstall
+
+  - import_tasks: upgrade.yaml
+    tags: upgrade
+
