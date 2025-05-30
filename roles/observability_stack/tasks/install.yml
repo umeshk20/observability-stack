@@ -1,0 +1,76 @@
+############################ Installing Node-Exporter #############################
+- name: Creates directory
+  file:
+    path: /tmp/ansible
+    state: directory
+    mode: 0775
+- name: download node exporter
+  get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz
+    dest: /tmp/ansible/
+- name: unarchive node exporter
+  unarchive:
+    src: /tmp/ansible/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz
+    dest: /tmp/ansible/
+- name: copy the required files and start Node-Exporter service.
+  shell: |
+    sudo cp roles/observability_stack/files/node_exporter.service /etc/systemd/system/
+    sudo cp /tmp/ansible/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter /tmp/ansible/
+    sudo systemctl daemon-reload
+    sudo systemctl enable node_exporter
+    sudo systemctl start node_exporter.service 
+
+########################### End of Node-Exporter Installation ################################
+#
+########################## Installing Prometheus ############################
+- name: download prometheus
+  get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
+    dest: /tmp/ansible/
+- name: unarchive prometheus
+  unarchive:
+    src: /tmp/ansible/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
+    dest: /tmp/ansible/
+- name: Adding Prometheus user and create needed directories
+  shell: |
+    sudo useradd --no-create-home --shell /bin/false prometheus
+  ignore_errors: yes
+- name: Copy and change owner of prometheus and promtool binary
+  shell: |
+    sudo mkdir /etc/prometheus
+    sudo mkdir /var/lib/prometheus
+    sudo chown prometheus:prometheus /etc/prometheus
+    sudo chown prometheus:prometheus /var/lib/prometheus
+    sudo cp /tmp/ansible/prometheus-{{ prometheus_version }}.linux-amd64/prometheus /tmp/ansible/
+    sudo cp /tmp/ansible/prometheus-{{ prometheus_version }}.linux-amd64/promtool /tmp/ansible/
+    sudo chown prometheus:prometheus /tmp/ansible/prometheus
+    sudo chown prometheus:prometheus /tmp/ansible/promtool
+- name: Updating prometheus.yml
+  template:
+    src: roles/observability_stack/vars/main.j2
+    dest: roles/observability_stack/files/prometheus.yml
+
+- name: Copy and change owner of prometheus and promtool binary
+  shell: |
+    sudo mkdir /etc/prometheus/consoles
+    sudo mkdir /etc/prometheus/console_libraries
+    sudo chown -R prometheus:prometheus /etc/prometheus/consoles
+    sudo chown -R prometheus:prometheus /etc/prometheus/console_libraries
+    sudo cp roles/observability_stack/files/prometheus.yml /etc/prometheus/prometheus.yml
+    sudo chown prometheus:prometheus /etc/prometheus/prometheus.yml
+- name: Create prometheus.service in /etc/systemd/system and configure systemd to use service
+  shell: |
+    sudo cp roles/observability_stack/files/prometheus.service /etc/systemd/system/prometheus.service
+    sudo systemctl daemon-reload
+    sudo systemctl start prometheus
+
+##################### End of Prometheus Installation ################################
+#
+############################ Installing Grafana ###############################
+#
+- name: Installing Grafana via YUM Repository
+  shell: |
+    sudo cp roles/observability_stack/files/grafana.repo /etc/yum.repos.d/grafana.repo
+    sudo yum install grafana
+    sudo systemctl start grafana-server
+    sudo systemctl enable grafana-server.service
