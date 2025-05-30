@@ -1,0 +1,65 @@
+################################## Upgrade Node-exporter ###############################
+- name: download node exporter
+  get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v{{ upgrade_node_version }}/node_exporter-{{ upgrade_node_version }}.linux-amd64.tar.gz
+    dest: /tmp/ansible/
+
+- name: unarchive node exporter
+  unarchive:
+    src: /tmp/ansible/node_exporter-{{ version }}.linux-amd64.tar.gz
+    dest: /tmp/ansible/
+
+- name: stopping the node-exporter service
+  shell: |
+    sudo systemctl stop node_exporter.service
+    sudo systemctl daemon-reload
+
+- name: copy the required files and start Node-Exporter service.
+  shell: |
+    sudo cp /tmp/ansible/node_exporter-{{ version }}.linux-amd64/node_exporter /tmp/ansible/
+    sudo systemctl daemon-reload
+    sudo systemctl enable node_exporter
+    sudo systemctl start node_exporter.service
+
+################################## Upgrade Prometheus ###############################
+
+- name: download prometheus
+  get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v{{ upgrade_prometheus_version }}/prometheus-{{ upgrade_prometheus_version }}.linux-amd64.tar.gz
+    dest: /tmp/ansible/
+
+- name: unarchive prometheus
+  unarchive:
+    src: /tmp/ansible/prometheus-{{ upgrade_prometheus_version }}.linux-amd64.tar.gz
+    dest: /tmp/ansible/
+
+- name: stopping the prometheus service
+  shell: |
+    sudo systemctl stop prometheus.service
+    sudo systemctl daemon-reload
+
+- name: Copy and change owner of prometheus and promtool binary
+  shell: |
+    sudo cp /tmp/ansible/prometheus-{{ upgrade_prometheus_version }}.linux-amd64/prometheus /tmp/ansible/
+    sudo cp /tmp/ansible/prometheus-{{ upgrade_prometheus_version }}.linux-amd64/promtool /tmp/ansible/
+    sudo chown prometheus:prometheus /tmp/ansible/prometheus
+    sudo chown prometheus:prometheus /tmp/ansible/promtool
+
+- name: Create prometheus.service in /etc/systemd/system and configure systemd to use service
+  shell: |
+    sudo systemctl daemon-reload
+    sudo systemctl start prometheus
+
+################################## Upgrade Grafana ###############################
+
+- name: stopping the Grafana service
+  shell: |
+    sudo systemctl stop grafana-server.service
+    sudo systemctl daemon-reload
+
+- name: Installing Grafana via YUM Repository
+  shell: |
+    sudo yum install -y https://dl.grafana.com/enterprise/release/grafana-enterprise-{{ upgrade_grafana_version }}.x86_64.rpm
+    sudo systemctl start grafana-server
+    sudo systemctl enable grafana-server.service
+
