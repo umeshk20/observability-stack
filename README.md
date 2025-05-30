@@ -1,4 +1,4 @@
-# observability-stack
+# Observability-stack
 This stack will setup the Node-Exporter, Prometheus and Grafana on centos system.
 the main.yaml is located in parent folder of the repository.
 This Observability stack is consist of 3 tasks.
