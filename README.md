@@ -4,8 +4,10 @@ the main.yaml is located in parent folder of the repository.
 This Observability stack is consist of 3 tasks.
 1. Install
 2. Uninstall
-3, Upgrade
+3. Upgrade
+
 Below are the commands to perform tasks.
+
 Install:
 ansible-playbook main.yaml --tags install
 
@@ -15,6 +17,7 @@ roles/observability_stack/defaults.main.yml
 
 Uninstall:
 ansible-playbook main.yaml --tags uninstall
+
 Upgrade:
 ansible-playbook main.yaml --tags upgrade
 
