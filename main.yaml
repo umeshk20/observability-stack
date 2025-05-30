@@ -1,0 +1,7 @@
+- hosts: localhost
+  connection: local
+  remote_user: sudo
+  gather_facts: false
+  roles:
+    - role: roles/observability_stack
+
