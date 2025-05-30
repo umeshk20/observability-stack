@@ -1,0 +1,21 @@
+- name: Uninstalling Node-Exporter
+  shell: |
+    sudo systemctl stop node_exporter.service
+    sudo systemctl disable node_exporter.service
+    sudo rm -rf /etc/systemd/system/node_exporter.service
+    sudo systemctl daemon-reload
+
+- name: Uninstalling Prometheus
+  shell: |
+    sudo systemctl stop prometheus.service
+    sudo systemctl disable prometheus.service
+    sudo rm -rf /etc/prometheus/
+    sudo rm /etc/systemd/system/prometheus.service
+    sudo systemctl daemon-reload
+
+- name: Uninstalling Grafana
+  shell: |
+    sudo systemctl stop grafana-server
+    sudo systemctl disable grafana-server
+    sudo rm -rf /etc/yum.repos.d/grafana.repo
+    sudo systemctl daemon-reload
